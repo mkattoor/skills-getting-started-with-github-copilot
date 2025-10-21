@@ -63,9 +63,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const participantsList = document.createElement("ul");
         participantsList.className = "participants-list";
-        (info.participants || []).forEach((p) => {
+        // helper to create a participant list item with remove button
+        function createParticipantItem(activityName, email) {
           const li = document.createElement("li");
-          li.textContent = p;
+          const span = document.createElement("span");
+          span.className = "participant-email";
+          span.textContent = email;
+          li.appendChild(span);
+
+          const btn = document.createElement("button");
+          btn.className = "participant-remove";
+          btn.type = "button";
+          btn.title = `Unregister ${email}`;
+          btn.setAttribute("aria-label", `Unregister ${email}`);
+          btn.textContent = "✖";
+          btn.addEventListener("click", () => {
+            unregisterParticipant(activityName, email, li);
+          });
+          li.appendChild(btn);
+          return li;
+        }
+
+        (info.participants || []).forEach((p) => {
+          const li = createParticipantItem(name, p);
           participantsList.appendChild(li);
         });
         participantsWrap.appendChild(participantsList);
@@ -76,6 +96,54 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       activitiesList.innerHTML = `<p class="error">Unable to load activities.</p>`;
       console.error(err);
+    }
+  }
+
+  // Helper to reliably find an activity card by its data-activity value.
+  function findActivityCard(activityName) {
+    const cards = document.querySelectorAll('.activity-card');
+    for (const c of cards) {
+      if (c.dataset.activity === activityName) return c;
+    }
+    return null;
+  }
+
+  async function unregisterParticipant(activityName, email, liElement) {
+    try {
+      const url = `/activities/${encodeURIComponent(activityName)}/participants?email=${encodeURIComponent(email)}`;
+      const res = await fetch(url, { method: "DELETE" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const detail = body.detail || body.message || "Unregister failed.";
+        showMessage(detail, "error");
+        return;
+      }
+
+  // remove from DOM and update counts/spots
+  const card = findActivityCard(activityName);
+      if (card) {
+        const list = card.querySelector(".participants-list");
+        if (liElement && liElement.parentNode === list) {
+          list.removeChild(liElement);
+        }
+        const title = card.querySelector(".participants-title");
+        const currentCount = list.children.length;
+        if (title) title.textContent = `Participants (${currentCount})`;
+        const spotsP = card.querySelector("p:nth-of-type(3)");
+        if (spotsP) {
+          const maxText = spotsP.textContent.match(/\/\d+$/);
+          if (maxText) {
+            const max = parseInt(maxText[0].slice(1), 10);
+            const remaining = Math.max(0, max - currentCount);
+            spotsP.textContent = `Spots remaining: ${remaining}/${max}`;
+          }
+        }
+      }
+
+      showMessage(`Unregistered ${email} from ${activityName}`, "success");
+    } catch (err) {
+      console.error(err);
+      showMessage("An error occurred while unregistering.", "error");
     }
   }
 
@@ -103,13 +171,29 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // update UI: find card and append participant
-      const card = document.querySelector(`.activity-card[data-activity="${CSS.escape(activityName)}"]`);
+  // update UI: find card and append participant
+  const card = findActivityCard(activityName);
       if (card) {
         const list = card.querySelector(".participants-list");
         const title = card.querySelector(".participants-title");
+        // create list item with remove button
+        const span = document.createElement("span");
+        span.className = "participant-email";
+        span.textContent = email;
+
+        const btn = document.createElement("button");
+        btn.className = "participant-remove";
+        btn.type = "button";
+        btn.title = `Unregister ${email}`;
+        btn.setAttribute("aria-label", `Unregister ${email}`);
+        btn.textContent = "✖";
+        btn.addEventListener("click", () => {
+          unregisterParticipant(activityName, email, btn.parentNode);
+        });
+
         const li = document.createElement("li");
-        li.textContent = email;
+        li.appendChild(span);
+        li.appendChild(btn);
         list.appendChild(li);
 
         // update title count and spots remaining

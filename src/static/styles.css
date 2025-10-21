@@ -161,8 +161,8 @@ footer {
 }
 
 .participants-list {
-  list-style: disc;
-  padding-left: 20px;
+  list-style: none; /* hide default bullets */
+  padding-left: 0;
   margin: 0;
   max-height: 120px;
   overflow: auto;
@@ -172,9 +172,36 @@ footer {
   margin-bottom: 6px;
   color: #333;
   font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
 }
 
 /* make long emails wrap nicely */
 .participants-list li {
   word-break: break-word;
+}
+
+.participant-email {
+  flex: 1 1 auto;
+  color: #333;
+}
+
+.participant-remove {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.participant-remove:hover {
+  background-color: rgba(198, 40, 40, 0.08);
+  color: #b71c1c;
 }
