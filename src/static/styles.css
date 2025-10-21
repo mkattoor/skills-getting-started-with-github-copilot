@@ -63,6 +63,9 @@ section h3 {
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #f9f9f9;
+  /* subtle inner divider for participants section */
+  display: flex;
+  flex-direction: column;
 }
 
 .activity-card h4 {
@@ -141,4 +144,37 @@ footer {
   margin-top: 30px;
   padding: 20px;
   color: #666;
+}
+
+.participants {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.participants-title {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #1a237e;
+  font-size: 0.95rem;
+}
+
+.participants-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+}
+
+.participants-list li {
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 0.92rem;
+}
+
+/* make long emails wrap nicely */
+.participants-list li {
+  word-break: break-word;
 }
